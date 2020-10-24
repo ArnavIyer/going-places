@@ -93,6 +93,11 @@ function drawDirections(origin, destination, waypoints, mode) {
         // optimizeWaypoints: true,
         waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
+    var totalPathPoints = [];
+    totalPathPoints.push(origin);
+    totalPathPoints.push(waypoints);
+    totalPathPoints.push(destination);
+    console.log(totalPathPoints);
     renderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
         draggable: true,
@@ -226,4 +231,8 @@ function convexHull(points) {
 function orientationNum(p, q, r) {
     let val = (q.lng - p.lng) * (r.lat - q.lat) - (q.lat - p.lat) * (r.lng - q.lng);
     return ((val == 0) ? 0 : ((val > 0) ? 1 : 2));
+}
+
+function getElevation() {
+
 }
