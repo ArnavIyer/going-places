@@ -55,15 +55,15 @@ function drawDirections(origin, destination, waypoints, mode) {
         destination: destination,   //google.maps.Place interface
         origin: origin,             //google.maps.Place interface
         travelMode: mode,
-        optimizeWaypoints: true,
-        waypoints: waypoints,       // Array<DirectionsWaypoint>
+        // optimizeWaypoints: true,
+        // waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
     renderer = new google.maps.DirectionsRenderer();
     renderer.setMap(map);
     service = new google.maps.DirectionsService();      // https://developers.google.com/maps/documentation/javascript/reference/directions
     service.route(request, (results, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-            console.log(results.route[0].overview_polyline)
+            console.log(results);
             renderer.setDirections(results);
         }
     });
