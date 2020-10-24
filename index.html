@@ -36,7 +36,30 @@
             </div>
             <input type="text" class="form-control" id="locationInput" placeholder="Enter Location">
           </div>
-          <button type="submit" id="submit" class="btn btn-primary">Submit</button>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="transportTypeSelect">Transport Type</label>
+            </div>
+            <select class="custom-select" id="transportTypeSelect" onchange="updateTransportType();">
+              <option selected>Choose...</option>
+              <option value="BICYCLING">Bicycling</option>
+              <option value="WALKING">Walking</option>
+              <option value="DRIVING">Driving</option>
+            </select>
+          </div>
+          <div class="card" style="width: 100%;">
+            <img class="card-img-top" id="highlightOne" alt="Route Highlight 1 image">
+            <div class="card-body">
+              <p class="card-text">Route Highlight 1</p>
+            </div>
+          </div>
+          <div class="card" style="width: 100%;">
+            <img class="card-img-top" id="highlightTwo" alt="Route Highlight 2 image">
+            <div class="card-body">
+              <p class="card-text">Route Highlight 2</p>
+            </div>
+          </div>
+          <!-- <button type="submit" id="submit" class="btn btn-primary">Submit</button> -->
         </form>
       </div>
       <div class="col">

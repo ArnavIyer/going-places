@@ -2,7 +2,9 @@ let map;
 let place_ids;
 let autocomplete;
 let locations;
+let ratings;
 let startingLocation;
+let transportType = 'BICYCLING';
 
 function main() {
     initMap();
@@ -19,6 +21,7 @@ function getPlaces(latitude, longitude, radius) {
     const type = ['tourist_attraction', 'primary_school', 'park'];
     place_ids = [];
     locations = [];
+    ratings = [];
     for (let t = 0; t < 3; t++) {
         const request = {
             location: { lat: latitude, lng: longitude },
@@ -31,6 +34,7 @@ function getPlaces(latitude, longitude, radius) {
                 for (let i = 0; i < results.length; i++) {
                     place_ids.push(results[i].place_id);
                     locations.push(results[i].geometry.location.toJSON());
+                    ratings.push(results[i].rating);
                     // createMarker(results[i].geometry.location, results[i].name);
                 }
                 map.setCenter(request.location);
@@ -46,19 +50,26 @@ function choosePoints(place_ids, locations) {
 
     var hullData = convexHull(locations);
 
-    hullData.hull.forEach(function (item) {
-        createMarker(item, "hull");
-    })
-
     let closestPlace = 0;
-    let minDist = Number.POSITIVE_INFINITY
+    let minDist = Number.POSITIVE_INFINITY;
+    let minRating = 0;
+    let ratingIndex = 0;
+    let prevRatingIndex = 0;
     hullData.hull.forEach(function (place, index) {
+        createMarker(place, "hull");
         let dist = Math.hypot(place.lat - startingLocation.lat, place.lng - startingLocation.lng);
         if (minDist > dist) {
             minDist = dist;
             closestPlace = index;
         }
+        if (minRating > hullData.hull_ratings[i]) {
+            prevRatingIndex = ratingIndex;
+            ratingIndex = i;
+            minRating = hullData.hull_ratings[i];
+        }
     });
+
+
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
     hullData.hull = hullData.hull.slice(0, Math.min(25, hullData.hull.length));
@@ -70,7 +81,7 @@ function choosePoints(place_ids, locations) {
         });
     });
 
-    drawDirections({ location: startingLocation }, { location: startingLocation }, waypoints, 'BICYCLING');
+    drawDirections({ location: startingLocation }, { location: startingLocation }, waypoints, transportType);
 }
 
 // gets and draws the directions on the map
@@ -151,21 +162,31 @@ function searchPlaces() {
 
     autocomplete.addListener('place_changed', function () {
         var place = autocomplete.getPlace();
+        updateTransportType();
 
         startingLocation = place.geometry.location.toJSON();
         let r = 2000;
         let centerCoord = computeOffset(startingLocation, r, Math.random() * Math.PI * 2);
         getPlaces(centerCoord.lat, centerCoord.lng, r);
 
-        console.log(place)
-    });
-
-    let button = document.getElementById("submit");
-
-    button.addEventListener("click", () => {
-        // getPlaces(startingLocation.lat, startingLocation.lng, 2000);
+        // var high1 = document.getElementById("highlightOne");
+        // high1.src = "https://www.pisd.edu/cms/lib/TX02215173/Centricity/Domain/1115/Mathews%20facade.jpg";
+        // var high2 = document.getElementById("highlightTwo");
+        // high2.src = "https://www.pisd.edu/cms/lib/TX02215173/Centricity/Domain/1115/Mathews%20facade.jpg";
     });
 }
+
+function getHighlights() {
+    var high1 = document.getElementById("highlightOne");
+    var high2 = document.getElementById("highlightTwo");
+}
+
+function updateTransportType() {
+    transportType = document.getElementById("transportTypeSelect").value;
+    console.log(transportType);
+}
+
+
 
 function convexHull(points) {
     if (points.length < 3) {
@@ -173,6 +194,7 @@ function convexHull(points) {
     }
     hull = [];
     hull_ids = [];
+    hull_ratings = [];
 
     var leftmost = 0;
     for (let i = 0; i < points.length; i++) {
@@ -186,6 +208,7 @@ function convexHull(points) {
     do {
         hull.push(points[p]);
         hull_ids.push(place_ids[p]);
+        hull_ratings.push(ratings[p]);
 
         q = (p + 1) % points.length;
         for (let i = 0; i < points.length; i++) {
@@ -197,7 +220,7 @@ function convexHull(points) {
 
     } while (p != leftmost);
 
-    return { hull: hull, hull_ids: hull_ids };
+    return { hull: hull, hull_ids: hull_ids, hull_ratings: hull_ratings };
 }
 
 function orientationNum(p, q, r) {
