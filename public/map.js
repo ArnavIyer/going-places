@@ -1,30 +1,70 @@
 let map;
+let place_ids;
 
 function main() {
     initMap();
     drawLine();
-    getPlaces(33.080056, -96.752313, 5000, 'tourist_attraction');
+    getPlaces(33.080056, -96.752313, 2000);
 }
 
 const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
 
-function getPlaces(latitude, longitude, radius, type) {
-    const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location='
+// gets places of interest to draw, passes these places to choosePoints
+function getPlaces(latitude, longitude, radius) {
+    const type = ['tourist_attraction', 'primary_school', 'park'];
+    place_ids = [];
+    for (let t = 0; t < 3; t++) {
+        // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location='
 
-    let url = base + latitude + ',' + longitude + '&radius=' + radius + '&type=' + type + '&key=' + KEY;
+        // let url = base + latitude + ',' + longitude + '&radius=' + radius + '&type=' + type[t] + '&key=' + KEY;
+
+        const request = {
+            location: {lat: latitude, lng: longitude},
+            radius: radius,
+            type: type[t]
+        };
+        service = new google.maps.places.PlacesService(map);
+        service.nearbySearch(request, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                for (let i = 0; i < results.length; i++) {
+                    place_ids.push(results[i].place_id);
+                    createMarker(results[i]);
+                }
+                map.setCenter(request.location);
+            }
+        });
+    }
+    setTimeout(() => {choosePoints(place_ids);}, 2000);
+}
+
+// chooses points and passes them to drawDirections
+function choosePoints(place_ids) {
+    // just to test drawDirections
+    var waypoints = [];
+    waypoints.push({location: place_ids[2], stopover: false});
+    drawDirections({placeId: place_ids[0]}, {placeId: place_ids[1]}, waypoints, 'BICYCLING');
+}
+
+function drawDirections(origin, destination, waypoints, mode) {
+    console.log(origin);
+    // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?origin='
+
+    // let url = base + 'place_id:' + origin + '&destination=place_id:' + destination + '&mode=' + mode + '&key=' + KEY;
 
     const request = {
-        location: {lat: latitude, lng: longitude},
-        radius: radius,
-        type: type
+        destination: destination,   //google.maps.Place interface
+        origin: origin,             //google.maps.Place interface
+        travelMode: mode,
+        optimizeWaypoints: true,
+        waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
-    service = new google.maps.places.PlacesService(map);
-    service.nearbySearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-            for (let i = 0; i < results.length; i++) {
-                createMarker(results[i]);
-            }
-            map.setCenter(results[0].geometry.location);
+    renderer = new google.maps.DirectionsRenderer();
+    renderer.setMap(map);
+    service = new google.maps.DirectionsService();      // https://developers.google.com/maps/documentation/javascript/reference/directions
+    service.route(request, (results, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+            console.log(results.route[0].overview_polyline)
+            renderer.setDirections(results);
         }
     });
 }
@@ -40,27 +80,12 @@ function createMarker(place) {
     });
 }
 
-/*
-
-*/
-
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 30.2672, lng: -97.7431 },
         zoom: 12,
     });
     console.log('test');
-
-    // markers = locations.map((location, i) => {
-    //     return new google.maps.Marker({
-    //         position: location,
-    //         label: 'A',
-    //     })
-    // })
-
-    // new MarkerClusterer(map, markers, {
-    // 
-    // })
 }
 
 function drawLine() {

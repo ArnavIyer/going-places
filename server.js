@@ -10,7 +10,7 @@ var upload = multer({ dest: __dirname + '/uploads/' });
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:true}));
 app.use(express.static(path.join(__dirname, 'public')));
- app.engine('html', require('ejs').renderFile);
+app.engine('html', require('ejs').renderFile);
 app.get('/',(req,res)=>{
      res.render('some.ejs');
 });
