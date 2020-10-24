@@ -1,5 +1,6 @@
 let map;
 let place_ids;
+let locations;
 
 function main() {
     initMap();
@@ -13,6 +14,7 @@ const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
 function getPlaces(latitude, longitude, radius) {
     const type = ['tourist_attraction', 'primary_school', 'park'];
     place_ids = [];
+    locations = [];
     for (let t = 0; t < 3; t++) {
         // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location='
 
@@ -27,27 +29,29 @@ function getPlaces(latitude, longitude, radius) {
         service.nearbySearch(request, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
-                    if (place_ids.length > 2) break;
                     place_ids.push(results[i].place_id);
+                    locations.push(results[i].geometry.location);
                     createMarker(results[i]);
                 }
                 map.setCenter(request.location);
             }
         });
     }
-    setTimeout(() => {choosePoints(place_ids);}, 2000);
+    setTimeout(() => {choosePoints(place_ids, locations);}, 2000); // how do i make this without a wait? this can only execute after we get all the place ids and locations
 }
 
 // chooses points and passes them to drawDirections
-function choosePoints(place_ids) {
-    // just to test drawDirections
-    var waypoints = [];
-    waypoints.push({location: place_ids[2], stopover: true});
+function choosePoints(place_ids, locations) {
+    var waypoints = []; // stores lat/lng and stopover for each intermediate step
+    waypoints.push({location: {lat: 33.056184, lng: -96.746869}, stopover: false});
+    // get the points in the convex hull in order
+
     drawDirections({placeId: place_ids[0]}, {placeId: place_ids[1]}, waypoints, 'BICYCLING');
 }
 
+// gets and draws the directions on the map
 function drawDirections(origin, destination, waypoints, mode) {
-    console.log(origin);
+    console.log(waypoints);
     // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?origin='
 
     // let url = base + 'place_id:' + origin + '&destination=place_id:' + destination + '&mode=' + mode + '&key=' + KEY;
@@ -57,7 +61,7 @@ function drawDirections(origin, destination, waypoints, mode) {
         origin: origin,             //google.maps.Place interface
         travelMode: mode,
         // optimizeWaypoints: true,
-        // waypoints: waypoints,       // Array<DirectionsWaypoint>
+        waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
     renderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
@@ -66,7 +70,6 @@ function drawDirections(origin, destination, waypoints, mode) {
     service = new google.maps.DirectionsService();      // https://developers.google.com/maps/documentation/javascript/reference/directions
     service.route(request, (results, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-            console.log(results);
             renderer.setDirections(results);
         }
     });
@@ -88,7 +91,6 @@ function initMap() {
         center: { lat: 30.2672, lng: -97.7431 },
         zoom: 12,
     });
-    console.log('test');
 }
 
 function drawLine() {
@@ -106,4 +108,10 @@ function drawLine() {
         strokeWeight: 2,
     });
     flightPath.setMap(map);
+}
+
+function convexHull(points) { 
+    hull = [];
+
+    return hull;
 }
