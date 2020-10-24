@@ -2,15 +2,33 @@
        * element that contains the map. */
 
 #map {
-    height: 500px;
+    height: 100%;
 }
 
+.ui {
+    -ms-flex: 0 0 25%;
+    flex: 0 0 25%;
+} 
+
+@media (max-width: 100%) {
+    .ui {
+      display: none; 
+    } 
+}
+
+.map-style {
+    height: 80vh
+}
+
+.container-fluid {
+    height: 100%
+}
 
 /* Optional: Makes the sample page fill the window. */
-/* 
+
 html,
 body {
     height: 100%;
     margin: 0;
     padding: 0;
-} */
+}
