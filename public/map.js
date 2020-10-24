@@ -2,11 +2,12 @@ let map;
 let place_ids;
 let autocomplete;
 let locations;
+let startingLocation;
 
 function main() {
     initMap();
     drawLine();
-    getPlaces(33.080056, -96.752313, 2000);
+    // getPlaces(33.080056, -96.752313, 2000);
     searchPlaces();
 }
 
@@ -45,8 +46,7 @@ function getPlaces(latitude, longitude, radius) {
 
 // chooses points and passes them to drawDirections
 function choosePoints(place_ids, locations) {
-    var waypoints = []; // stores lat/lng and stopover for each intermediate step
-    waypoints.push({location: {lat: 33.086184, lng: -96.746869}, stopover: false});
+    // waypoints.push({location: {lat: 33.086184, lng: -96.746869}, stopover: false});
     // get the points in the convex hull in order
 
     var hullData = convexHull(locations);
@@ -57,7 +57,26 @@ function choosePoints(place_ids, locations) {
         createMarker(item, "hull");
     })
 
-    drawDirections({placeId: place_ids[0]}, {placeId: place_ids[1]}, waypoints, 'BICYCLING');
+    let closestPlace = 0;
+    let minDist = Number.POSITIVE_INFINITY
+    hullData.hull.forEach(function(place, index) {
+        let dist = Math.hypot(place.lat - startingLocation.lat, place.lng - startingLocation.lng);
+        if (minDist > dist) {
+            minDist = dist;
+            closestPlace = index;
+        }
+    });
+
+    hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
+    waypoints = []
+    hullData.hull.forEach(function(item) {
+        waypoints.push({
+            location: item,
+            stopover: false,
+        });
+    });
+
+    drawDirections({location: startingLocation}, {location: startingLocation}, waypoints, 'BICYCLING');
 }
 
 // gets and draws the directions on the map
@@ -129,8 +148,17 @@ function searchPlaces() {
 
     autocomplete.addListener('place_changed', function () {
         var place = autocomplete.getPlace();
-
+        
+        startingLocation = place.geometry.location.toJSON();
+        getPlaces(startingLocation.lat, startingLocation.lng, 2000);
+        
         console.log(place)
+    });
+
+    let button = document.getElementById("submit");
+
+    button.addEventListener("click", () => {
+
     });
 }
 function convexHull(points) { 
