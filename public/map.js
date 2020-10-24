@@ -1,11 +1,13 @@
 let map;
 let place_ids;
+let autocomplete;
 let locations;
 
 function main() {
     initMap();
     drawLine();
     getPlaces(33.080056, -96.752313, 2000);
+    searchPlaces();
 }
 
 const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
@@ -21,7 +23,7 @@ function getPlaces(latitude, longitude, radius) {
         // let url = base + latitude + ',' + longitude + '&radius=' + radius + '&type=' + type[t] + '&key=' + KEY;
 
         const request = {
-            location: {lat: latitude, lng: longitude},
+            location: { lat: latitude, lng: longitude },
             radius: radius,
             type: type[t]
         };
@@ -119,7 +121,18 @@ function drawLine() {
     flightPath.setMap(map);
 }
 
-// Convex Hull and helper methods
+function searchPlaces() {
+    var input = document.getElementById('locationInput');
+    autocomplete = new google.maps.places.Autocomplete(input, {});
+
+    console.log('test');
+
+    autocomplete.addListener('place_changed', function () {
+        var place = autocomplete.getPlace();
+
+        console.log(place)
+    });
+}
 function convexHull(points) { 
     if (points.length < 3) {
         return points;
