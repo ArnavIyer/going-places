@@ -27,6 +27,7 @@ function getPlaces(latitude, longitude, radius) {
         service.nearbySearch(request, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
+                    if (place_ids.length > 2) break;
                     place_ids.push(results[i].place_id);
                     createMarker(results[i]);
                 }
@@ -41,7 +42,7 @@ function getPlaces(latitude, longitude, radius) {
 function choosePoints(place_ids) {
     // just to test drawDirections
     var waypoints = [];
-    waypoints.push({location: place_ids[2], stopover: false});
+    waypoints.push({location: place_ids[2], stopover: true});
     drawDirections({placeId: place_ids[0]}, {placeId: place_ids[1]}, waypoints, 'BICYCLING');
 }
 
@@ -58,7 +59,9 @@ function drawDirections(origin, destination, waypoints, mode) {
         // optimizeWaypoints: true,
         // waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
-    renderer = new google.maps.DirectionsRenderer();
+    renderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+    });
     renderer.setMap(map);
     service = new google.maps.DirectionsService();      // https://developers.google.com/maps/documentation/javascript/reference/directions
     service.route(request, (results, status) => {
