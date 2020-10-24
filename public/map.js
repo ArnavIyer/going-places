@@ -41,7 +41,7 @@ function getPlaces(latitude, longitude, radius) {
         });
     }
     console.log(locations);
-    setTimeout(() => {choosePoints(place_ids, locations);}, 2000); // how do i make this without a wait? this can only execute after we get all the place ids and locations
+    setTimeout(() => { choosePoints(place_ids, locations); }, 2000); // how do i make this without a wait? this can only execute after we get all the place ids and locations
 }
 
 // chooses points and passes them to drawDirections
@@ -50,16 +50,16 @@ function choosePoints(place_ids, locations) {
     // get the points in the convex hull in order
 
     var hullData = convexHull(locations);
-    
+
     console.log(hullData);
 
-    hullData.hull.forEach(function(item) {
+    hullData.hull.forEach(function (item) {
         createMarker(item, "hull");
     })
 
     let closestPlace = 0;
     let minDist = Number.POSITIVE_INFINITY
-    hullData.hull.forEach(function(place, index) {
+    hullData.hull.forEach(function (place, index) {
         let dist = Math.hypot(place.lat - startingLocation.lat, place.lng - startingLocation.lng);
         if (minDist > dist) {
             minDist = dist;
@@ -69,14 +69,14 @@ function choosePoints(place_ids, locations) {
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
     waypoints = []
-    hullData.hull.forEach(function(item) {
+    hullData.hull.forEach(function (item) {
         waypoints.push({
             location: item,
             stopover: false,
         });
     });
 
-    drawDirections({location: startingLocation}, {location: startingLocation}, waypoints, 'BICYCLING');
+    drawDirections({ location: startingLocation }, { location: startingLocation }, waypoints, 'BICYCLING');
 }
 
 // gets and draws the directions on the map
@@ -140,6 +140,20 @@ function drawLine() {
     flightPath.setMap(map);
 }
 
+function computeOffset(from, distance, heading) {
+    distance /= 6371009.0;  //earth_radius = 6371009 # in meters
+    let heading = Math.toRadians(heading);
+    let fromLat = Math.toRadians(from.lat);
+    let fromLng = Math.toRadians(from.lng);
+    let cosDistance = Math.cos(distance);
+    let sinDistance = Math.sin(distance);
+    let sinFromLat = Math.sin(fromLat);
+    let cosFromLat = Math.cos(fromLat);
+    let sinLat = cosDistance * sinFromLat + sinDistance * cosFromLat * Math.cos(heading);
+    let dLng = Math.atan2(sinDistance * cosFromLat * Math.sin(heading), cosDistance - sinFromLat * sinLat);
+    return {lat:Math.toDegrees(Math.asin(sinLat)), lng:Math.toDegrees(fromLng + dLng)};
+}
+
 function searchPlaces() {
     var input = document.getElementById('locationInput');
     autocomplete = new google.maps.places.Autocomplete(input, {});
@@ -148,20 +162,22 @@ function searchPlaces() {
 
     autocomplete.addListener('place_changed', function () {
         var place = autocomplete.getPlace();
-        
+
         startingLocation = place.geometry.location.toJSON();
-        getPlaces(startingLocation.lat, startingLocation.lng, 2000);
-        
+        let r = 2000;
+        let centerCoord = computeOffset(startingLocation, r, Math.random() * Math.PI * 2);
+        getPlaces(centerCoord.lat, centerCoord.lng + r * Math.sin(theta), r);
+
         console.log(place)
     });
 
     let button = document.getElementById("submit");
 
     button.addEventListener("click", () => {
-
+        // getPlaces(startingLocation.lat, startingLocation.lng, 2000);
     });
 }
-function convexHull(points) { 
+function convexHull(points) {
     if (points.length < 3) {
         return points;
     }
@@ -181,20 +197,20 @@ function convexHull(points) {
         hull.push(points[p]);
         hull_ids.push(place_ids[p]);
 
-        q = (p+1)%points.length;
+        q = (p + 1) % points.length;
         for (let i = 0; i < points.length; i++) {
-            if (orientationNum(points[p],points[i], points[q]) == 2)
-                q = i; 
+            if (orientationNum(points[p], points[i], points[q]) == 2)
+                q = i;
         }
 
         p = q;
 
     } while (p != leftmost);
 
-    return {hull: hull, hull_ids: hull_ids};
+    return { hull: hull, hull_ids: hull_ids };
 }
 
 function orientationNum(p, q, r) {
-    let val = (q.lng - p.lng) * (r.lat - q.lat) - (q.lat - p.lat) * (r.lng - q.lng); 
+    let val = (q.lng - p.lng) * (r.lat - q.lat) - (q.lat - p.lat) * (r.lng - q.lng);
     return ((val == 0) ? 0 : ((val > 0) ? 1 : 2));
 }
