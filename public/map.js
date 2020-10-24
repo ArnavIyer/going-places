@@ -1,10 +1,12 @@
 let map;
 let place_ids;
+let autocomplete;
 
 function main() {
     initMap();
     drawLine();
     getPlaces(33.080056, -96.752313, 2000);
+    searchPlaces();
 }
 
 const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
@@ -19,7 +21,7 @@ function getPlaces(latitude, longitude, radius) {
         // let url = base + latitude + ',' + longitude + '&radius=' + radius + '&type=' + type[t] + '&key=' + KEY;
 
         const request = {
-            location: {lat: latitude, lng: longitude},
+            location: { lat: latitude, lng: longitude },
             radius: radius,
             type: type[t]
         };
@@ -35,15 +37,15 @@ function getPlaces(latitude, longitude, radius) {
             }
         });
     }
-    setTimeout(() => {choosePoints(place_ids);}, 2000);
+    setTimeout(() => { choosePoints(place_ids); }, 2000);
 }
 
 // chooses points and passes them to drawDirections
 function choosePoints(place_ids) {
     // just to test drawDirections
     var waypoints = [];
-    waypoints.push({location: place_ids[2], stopover: true});
-    drawDirections({placeId: place_ids[0]}, {placeId: place_ids[1]}, waypoints, 'BICYCLING');
+    waypoints.push({ location: place_ids[2], stopover: true });
+    drawDirections({ placeId: place_ids[0] }, { placeId: place_ids[1] }, waypoints, 'BICYCLING');
 }
 
 function drawDirections(origin, destination, waypoints, mode) {
@@ -106,4 +108,17 @@ function drawLine() {
         strokeWeight: 2,
     });
     flightPath.setMap(map);
+}
+
+function searchPlaces() {
+    var input = document.getElementById('locationInput');
+    autocomplete = new google.maps.places.Autocomplete(input, {});
+
+    console.log('test');
+
+    autocomplete.addListener('place_changed', function () {
+        var place = autocomplete.getPlace();
+
+        console.log(place)
+    });
 }
