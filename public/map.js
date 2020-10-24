@@ -30,28 +30,37 @@ function getPlaces(latitude, longitude, radius) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
                     place_ids.push(results[i].place_id);
-                    locations.push(results[i].geometry.location);
-                    createMarker(results[i]);
+                    locations.push(results[i].geometry.location.toJSON());
+                    // createMarker(results[i].geometry.location, results[i].name);
                 }
                 map.setCenter(request.location);
             }
         });
     }
+    console.log(locations);
     setTimeout(() => {choosePoints(place_ids, locations);}, 2000); // how do i make this without a wait? this can only execute after we get all the place ids and locations
 }
 
 // chooses points and passes them to drawDirections
 function choosePoints(place_ids, locations) {
     var waypoints = []; // stores lat/lng and stopover for each intermediate step
-    waypoints.push({location: {lat: 33.056184, lng: -96.746869}, stopover: false});
+    waypoints.push({location: {lat: 33.086184, lng: -96.746869}, stopover: false});
     // get the points in the convex hull in order
+
+    var hullData = convexHull(locations);
+    
+    console.log(hullData);
+
+    hullData.hull.forEach(function(item) {
+        createMarker(item, "hull");
+    })
 
     drawDirections({placeId: place_ids[0]}, {placeId: place_ids[1]}, waypoints, 'BICYCLING');
 }
 
 // gets and draws the directions on the map
 function drawDirections(origin, destination, waypoints, mode) {
-    console.log(waypoints);
+    // console.log(waypoints);
     // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?origin='
 
     // let url = base + 'place_id:' + origin + '&destination=place_id:' + destination + '&mode=' + mode + '&key=' + KEY;
@@ -75,13 +84,13 @@ function drawDirections(origin, destination, waypoints, mode) {
     });
 }
 
-function createMarker(place) {
+function createMarker(location, name) {
     const marker = new google.maps.Marker({
         map,
-        position: place.geometry.location,
+        position: location,
     });
     google.maps.event.addListener(marker, "click", () => {
-        infowindow.setContent(place.name);
+        infowindow.setContent(name);
         infowindow.open(map);
     });
 }
@@ -110,8 +119,41 @@ function drawLine() {
     flightPath.setMap(map);
 }
 
+// Convex Hull and helper methods
 function convexHull(points) { 
+    if (points.length < 3) {
+        return points;
+    }
     hull = [];
+    hull_ids = [];
 
-    return hull;
+    var leftmost = 0;
+    for (let i = 0; i < points.length; i++) {
+        if (points[i].lat < points[leftmost].lat) {
+            leftmost = i;
+        }
+    }
+
+    let p = leftmost;
+    let q;
+    do {
+        hull.push(points[p]);
+        hull_ids.push(place_ids[p]);
+
+        q = (p+1)%points.length;
+        for (let i = 0; i < points.length; i++) {
+            if (orientationNum(points[p],points[i], points[q]) == 2)
+                q = i; 
+        }
+
+        p = q;
+
+    } while (p != leftmost);
+
+    return {hull: hull, hull_ids: hull_ids};
+}
+
+function orientationNum(p, q, r) {
+    let val = (q.lng - p.lng) * (r.lat - q.lat) - (q.lat - p.lat) * (r.lng - q.lng); 
+    return ((val == 0) ? 0 : ((val > 0) ? 1 : 2));
 }
