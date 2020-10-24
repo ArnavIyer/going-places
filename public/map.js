@@ -142,16 +142,15 @@ function drawLine() {
 
 function computeOffset(from, distance, heading) {
     distance /= 6371009.0;  //earth_radius = 6371009 # in meters
-    let heading = Math.toRadians(heading);
-    let fromLat = Math.toRadians(from.lat);
-    let fromLng = Math.toRadians(from.lng);
+    let fromLat = from.lat * Math.PI / 180.0;
+    let fromLng = from.lng * Math.PI / 180.0;
     let cosDistance = Math.cos(distance);
     let sinDistance = Math.sin(distance);
     let sinFromLat = Math.sin(fromLat);
     let cosFromLat = Math.cos(fromLat);
     let sinLat = cosDistance * sinFromLat + sinDistance * cosFromLat * Math.cos(heading);
     let dLng = Math.atan2(sinDistance * cosFromLat * Math.sin(heading), cosDistance - sinFromLat * sinLat);
-    return {lat:Math.toDegrees(Math.asin(sinLat)), lng:Math.toDegrees(fromLng + dLng)};
+    return {lat:Math.asin(sinLat) * 180 / Math.PI, lng:(fromLng + dLng) * 180 / Math.PI};
 }
 
 function searchPlaces() {
@@ -166,7 +165,7 @@ function searchPlaces() {
         startingLocation = place.geometry.location.toJSON();
         let r = 2000;
         let centerCoord = computeOffset(startingLocation, r, Math.random() * Math.PI * 2);
-        getPlaces(centerCoord.lat, centerCoord.lng + r * Math.sin(theta), r);
+        getPlaces(centerCoord.lat, centerCoord.lng, r);
 
         console.log(place)
     });
