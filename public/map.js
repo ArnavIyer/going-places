@@ -6,7 +6,7 @@ let startingLocation;
 
 function main() {
     initMap();
-    drawLine();
+    // drawLine();
     // getPlaces(33.080056, -96.752313, 2000);
     searchPlaces();
 }
@@ -15,14 +15,11 @@ const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
 
 // gets places of interest to draw, passes these places to choosePoints
 function getPlaces(latitude, longitude, radius) {
+    initMap(); // to erase previous routes
     const type = ['tourist_attraction', 'primary_school', 'park'];
     place_ids = [];
     locations = [];
     for (let t = 0; t < 3; t++) {
-        // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location='
-
-        // let url = base + latitude + ',' + longitude + '&radius=' + radius + '&type=' + type[t] + '&key=' + KEY;
-
         const request = {
             location: { lat: latitude, lng: longitude },
             radius: radius,
@@ -46,12 +43,8 @@ function getPlaces(latitude, longitude, radius) {
 
 // chooses points and passes them to drawDirections
 function choosePoints(place_ids, locations) {
-    // waypoints.push({location: {lat: 33.086184, lng: -96.746869}, stopover: false});
-    // get the points in the convex hull in order
 
     var hullData = convexHull(locations);
-
-    console.log(hullData);
 
     hullData.hull.forEach(function (item) {
         createMarker(item, "hull");
@@ -68,6 +61,7 @@ function choosePoints(place_ids, locations) {
     });
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
+    hullData.hull = hullData.hull.slice(0, Math.min(25, hullData.hull.length));
     waypoints = []
     hullData.hull.forEach(function (item) {
         waypoints.push({
@@ -81,11 +75,6 @@ function choosePoints(place_ids, locations) {
 
 // gets and draws the directions on the map
 function drawDirections(origin, destination, waypoints, mode) {
-    // console.log(waypoints);
-    // const base = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?origin='
-
-    // let url = base + 'place_id:' + origin + '&destination=place_id:' + destination + '&mode=' + mode + '&key=' + KEY;
-
     const request = {
         destination: destination,   //google.maps.Place interface
         origin: origin,             //google.maps.Place interface
@@ -95,6 +84,7 @@ function drawDirections(origin, destination, waypoints, mode) {
     };
     renderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
+        draggable: true,
     });
     renderer.setMap(map);
     service = new google.maps.DirectionsService();      // https://developers.google.com/maps/documentation/javascript/reference/directions
@@ -176,6 +166,7 @@ function searchPlaces() {
         // getPlaces(startingLocation.lat, startingLocation.lng, 2000);
     });
 }
+
 function convexHull(points) {
     if (points.length < 3) {
         return points;
