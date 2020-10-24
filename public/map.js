@@ -62,10 +62,10 @@ function choosePoints(place_ids, locations) {
             minDist = dist;
             closestPlace = index;
         }
-        if (minRating > hullData.hull_ratings[i]) {
+        if (minRating > hullData.hull_ratings[index]) {
             prevRatingIndex = ratingIndex;
-            ratingIndex = i;
-            minRating = hullData.hull_ratings[i];
+            ratingIndex = index;
+            minRating = hullData.hull_ratings[index];
         }
     });
 
