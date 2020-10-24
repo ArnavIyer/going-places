@@ -1,0 +1,20 @@
+{
+  "name": "hacktx",
+  "version": "1.0.0",
+  "description": "route planner",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.1.13",
+    "body-parser": "^1.19.0",
+    "consolidate": "^0.16.0",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "html": "^1.0.0",
+    "mustache": "^4.0.1"
+  }
+}
