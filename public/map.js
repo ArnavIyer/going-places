@@ -74,9 +74,14 @@ function choosePoints(locations) {
             }
         }
     });
-     
-    while (hullData.hull_photos[prevRatingIndex] == "") {
-        prevRatingIndex++;
+    
+    if (hullData.hull_photos[prevRatingIndex] == "") {
+        for (let i = 0; i < hullData.hull_photos.length; i++) {
+            if (hullData.hull_photos[i] != "" && i == ratingIndex) {
+                prevRatingIndex = i;
+                break;
+            }
+        }
     }
 
     getHighlights(hullData.hull_photos[ratingIndex], hullData.hull_photos[prevRatingIndex], hullData.hull_names[ratingIndex], hullData.hull_names[prevRatingIndex]);
