@@ -104,6 +104,18 @@
         <div class="map-style">
           <div id="map"></div>
         </div>
+        <div class="d-flex justify-content-center mt-2">
+          <div class="input-group mb-2 w-25">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Satisfaction Level</span>
+            </div>
+            <input type="text" class="form-control" id="satisfactionInput" placeholder="0-100" onsubmit="return false;"/>
+          </div>
+        </div>
+        <div class="d-flex justify-content-center mt-1">
+        <input type="button" value="Record" id="record" class="btn btn-primary mb-2"/>        
+        <p id="error" class="font-weight-bold text-danger mt-2 ml-1">Error!</p>
+      </div>
       </div>
     </div>
   </div>

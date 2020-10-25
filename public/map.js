@@ -15,6 +15,7 @@ const ws2 = new WebSocket("ws://localhost:8088");
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
+    document.getElementById('error').hidden = true;
     initMap();
     searchPlaces();
 }
@@ -222,9 +223,29 @@ function searchPlaces() {
         document.getElementById("locationInput").innerHTML = location.formatted_address;
         let centerCoord = computeOffset(startingLocation, radius, Math.random() * Math.PI * 2);
         getPlaces(centerCoord.lat, centerCoord.lng, radius);
+    });
 
-        if(direction_service !== undefined) ws2.send(JSON.stringify({direction_service: direction_service, hull_data: hullData, sentiment: 0}, null, 2));
-        console.log("test");
+    record = document.getElementById('record');
+    record.addEventListener('click', function() {
+        satisfaction = document.getElementById('satisfactionInput').value;
+        console.log(direction_service);
+        console.log(hullData);
+        console.log(satisfaction);
+        console.log(direction_service === undefined);
+        console.log(hullData === undefined);
+        console.log(isNaN(satisfaction));
+        console.log(satisfaction === '');
+        if(direction_service === undefined || hullData === undefined || satisfaction === '' || isNaN(satisfaction)) {
+            document.getElementById('error').hidden = false;
+            return;
+        }
+        if(parseInt(satisfaction) < 0 || parseInt(satisfaction) > 100) {
+            document.getElementById('error').hidden = false;
+            return;
+        }
+        console.log('test');
+        ws2.send(JSON.stringify({direction_service: direction_service, hull_data: hullData, sentiment: satisfaction}, null, 2));
+        document.getElementById('error').hidden = true;
     });
 }
 
