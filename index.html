@@ -80,20 +80,22 @@
               </tbody>
             </table>
           </div>
-          <div id="highlights">
-            <h3 class="display">Route Highlights</h3>
-            <div class="card" style="width: 100%;">
-              <img class="card-img-top" id="highlightOne" alt="Route Highlight 1 image">
-              <div class="card-body">
-                <p class="card-text" id="highlightOneText"></p>
-              </div>
+          <h3 class="display">Route Highlights</h3>
+          <div id="highlightCarousel" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner" id="carousel-items">
+              <!-- <div class="carousel-item active">
+                <img class="d-block w-100" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimages-na.ssl-images-amazon.com%2Fimages%2FI%2F41tNYuWM1oL._SY300_QL70_.jpg&f=1&nofb=1" alt="First slide">
+              </div> -->
+              <!-- new slides here -->
             </div>
-            <div class="card" style="width: 100%;">
-              <img class="card-img-top" id="highlightTwo" alt="Route Highlight 2 image">
-              <div class="card-body">
-                <p class="card-text" id="highlightTwoText"></p>
-              </div>
-            </div>
+            <a class="carousel-control-prev" href="#highlightCarousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#highlightCarousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>
           </div>
         </form>
       </div>

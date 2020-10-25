@@ -1,7 +1,6 @@
 let map;
 let autocomplete;
 let locations;
-let ratings;
 let startingLocation;
 let photos;
 let names;
@@ -22,7 +21,6 @@ function getPlaces(latitude, longitude, radius) {
     initMap(); // to erase previous routes
     const type = ['tourist_attraction', 'primary_school', 'park'];
     locations = [];
-    ratings = [];
     photos = [];
     names = [];
     for (let t = 0; t < 3; t++) {
@@ -36,7 +34,6 @@ function getPlaces(latitude, longitude, radius) {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
                     locations.push(results[i].geometry.location.toJSON());
-                    ratings.push(results[i].rating);
                     if (typeof(results[i].photos) == "undefined") {
                         photos.push("");
                     } else {
@@ -58,9 +55,6 @@ function choosePoints(locations) {
 
     let closestPlace = 0;
     let minDist = Number.POSITIVE_INFINITY;
-    let maxRating = 0;
-    let ratingIndex = 0;
-    let prevRatingIndex = 0;
     hullData.hull.forEach(function (place, index) {
         createMarker(place, "hull");
         let dist = Math.hypot(place.lat - startingLocation.lat, place.lng - startingLocation.lng);
@@ -68,25 +62,9 @@ function choosePoints(locations) {
             minDist = dist;
             closestPlace = index;
         }
-        if (maxRating < hullData.hull_ratings[index]) {
-            if (hullData.hull_photos[index] != "") {
-                prevRatingIndex = ratingIndex;
-                ratingIndex = index;
-                maxRating = hullData.hull_ratings[index];
-            }
-        }
     });
-    
-    if (hullData.hull_photos[prevRatingIndex] == "") {
-        for (let i = 0; i < hullData.hull_photos.length; i++) {
-            if (hullData.hull_photos[i] != "" && i == ratingIndex) {
-                prevRatingIndex = i;
-                break;
-            }
-        }
-    }
 
-    getHighlights(hullData.hull_photos[ratingIndex], hullData.hull_photos[prevRatingIndex], hullData.hull_names[ratingIndex], hullData.hull_names[prevRatingIndex]);
+    fillCarousel(hullData.hull_names, hullData.hull_photos);
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
     hullData.hull = hullData.hull.slice(0, Math.min(25, hullData.hull.length));
@@ -120,6 +98,7 @@ function drawDirections(origin, destination, waypoints, mode) {
     getElevation(totalPathPoints);
     renderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
+        suppressBicyclingLayer: true,
         draggable: true,
     });
     renderer.setMap(map);
@@ -139,6 +118,17 @@ function drawDirections(origin, destination, waypoints, mode) {
         title: "Starting Position",
         label: 'S'
     });
+}
+
+function fillCarousel(names, photos) {
+    photosHTML = "";
+    active = " active";
+    photos.forEach(function(photo, i) {
+        if (photo != "") {
+            photosHTML += "<div class=\"carousel-item\"><img class=\"d-block w-100\" src=" + photo + " alt=\"Third slide\"><div class=\"carousel-caption d-none d-md-block\">   <p>" + names[i] + "</p></div></div>";
+        }
+    });
+    document.getElementById("carousel-items").innerHTML = photosHTML.slice(0,25) + active + photosHTML.slice(25);
 }
 
 function createMarker(location, name) {
@@ -216,18 +206,6 @@ function searchPlaces() {
     });
 }
 
-function getHighlights(url1, url2, name1, name2) {
-    document.getElementById("highlightOne").src = url1;
-    document.getElementById("highlightTwo").src = url2;
-    document.getElementById("highlightOneText").innerHTML = name1;
-    document.getElementById("highlightTwoText").innerHTML = name2;
-
-    console.log(url1);
-    console.log(name1);
-    console.log(url2);
-    console.log(name2);
-}
-
 function updateTransportType() {
     transportType = document.getElementById("transportTypeSelect").value;
     console.log(transportType);
@@ -244,7 +222,6 @@ function convexHull(points) {
         return points;
     }
     hull = [];
-    hull_ratings = [];
     hull_photos = [];
     hull_names = [];
 
@@ -259,7 +236,6 @@ function convexHull(points) {
     let q;
     do {
         hull.push(points[p]);
-        hull_ratings.push(ratings[p]);
         hull_photos.push(photos[p]);
         hull_names.push(names[p]);
 
@@ -273,7 +249,7 @@ function convexHull(points) {
 
     } while (p != leftmost);
 
-    return { hull: hull, hull_ratings: hull_ratings, hull_photos: hull_photos, hull_names: hull_names};
+    return { hull: hull, hull_photos: hull_photos, hull_names: hull_names};
 }
 
 function orientationNum(p, q, r) {
