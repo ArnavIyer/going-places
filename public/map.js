@@ -8,7 +8,7 @@ let radius;
 let transportType;
 let place;
 
-const ws = new WebSocket("ws://localhost:9099");
+// const ws = new WebSocket("ws://localhost:9099");
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
@@ -39,6 +39,7 @@ function getPlaces(latitude, longitude, radius) {
                     if (typeof(results[i].photos) == "undefined") {
                         photos.push("");
                     } else {
+                        console.log(results[i].photos[0].getUrl());
                         photos.push(results[i].photos[0].getUrl());
                     }
                     names.push(results[i].name);
@@ -52,9 +53,7 @@ function getPlaces(latitude, longitude, radius) {
 
 // chooses points and passes them to drawDirections
 function choosePoints(locations) {
-    console.log(names);
     var hullData = convexHull(locations);
-
     let closestPlace = 0;
     let minDist = Number.POSITIVE_INFINITY;
     hullData.hull.forEach(function (place, index) {
@@ -66,20 +65,23 @@ function choosePoints(locations) {
         }
     });
 
-    finalPhotos = [];
-    finalNames = [];
+    // finalPhotos = [];
+    // finalNames = [];
+    // console.log(hullData.hull_photos.length);
+    // ws.send(hullData.hull_photos);
+    // ws.addEventListener("message", answers => {
+    //     console.log(answers);
+    //     JSON.parse(answers.data).forEach(function(goodImage, i) {
+    //         if (goodImage) {
+    //             finalPhotos.push(url);
+    //             finalNames.push(hullData.hull_names[i]);
+    //         }
+    //     })
+    // });
 
-    hullData.hull_photos.forEach(function(url, i) {
-        ws.send(url);
-        ws.addEventListener("message", e => {
-            if (e.data) {
-                finalPhotos.push(url);
-                finalNames.push(hullData.hull_names[i]);
-            }
-        });
-    });
+    // console.log(finalPhotos);
 
-    // fillCarousel(finalNames, finalPhotos);
+    fillCarousel(hullData.hull_names, hullData.hull_photos);
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
     hullData.hull = hullData.hull.slice(0, Math.min(25, hullData.hull.length));
@@ -107,7 +109,6 @@ function drawDirections(origin, destination, waypoints, mode) {
     totalPathPoints.push(origin.location);
     waypoints.forEach(item => {
         totalPathPoints.push(item.location)
-        console.log(item.location);
     });
     totalPathPoints.push(destination.location);
     getElevation(totalPathPoints);
@@ -198,8 +199,6 @@ function searchPlaces() {
     var input = document.getElementById('locationInput');
     autocomplete = new google.maps.places.Autocomplete(input, {});
 
-    console.log('test');
-
     autocomplete.addListener('place_changed', function () {
         place = autocomplete.getPlace();
         startingLocation = place.geometry.location.toJSON();
@@ -223,13 +222,10 @@ function searchPlaces() {
 
 function updateTransportType() {
     transportType = document.getElementById("transportTypeSelect").value;
-    console.log(transportType);
 }
 
 function updateRadius() {
     radius = document.getElementById("radiusInput").value;
-    // radius = (radius * MILESTOM) / (2 * Math.PI);
-    console.log(radius);
 }
 
 function convexHull(points) {
@@ -274,12 +270,10 @@ function orientationNum(p, q, r) {
 
 function getElevation(path) {
     const elevator = new google.maps.ElevationService();
-    console.log(path);
     elevator.getElevationForLocations(
     {
         locations: path,
     }, (res, status) => {      
-        console.log(res);  
         let startElevation = res[0].elevation;
         let sum = 0;
         for(let i = 1; i < res.length; ++i) {
