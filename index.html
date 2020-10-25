@@ -30,24 +30,24 @@
     <div class="row">
       <div class="col ui">
         <h3 class="display">Route Specifications</h3>
-        <form>
+        <form onsubmit="return false;">
           <div class="input-group mb-2">
             <div class="input-group-prepend">
               <span class="input-group-text">Starting Location</span>
             </div>
-            <input type="text" class="form-control" id="locationInput" placeholder="Enter Location">
+            <input type="text" class="form-control" id="locationInput" placeholder="Enter Location" onsubmit="return false;"/>
           </div>
           <div class="input-group mb-3">
             <div class="input-group-prepend">
               <label class="input-group-text" for="transportTypeSelect">Transport Type</label>
             </div>
             <select class="custom-select" id="transportTypeSelect" onchange="updateTransportType();">
-              <option selected>Choose...</option>
-              <option value="BICYCLING">Bicycling</option>
               <option value="WALKING">Walking</option>
+              <option value="BICYCLING">Bicycling</option>
               <option value="DRIVING">Driving</option>
             </select>
           </div>
+          <input type="button" value="Submit" id="submit" class="btn btn-primary mb-2"/>
           <div id="route-metrics">
             <h3 class="display">Route Metrics</h3>
             <table class="table">
@@ -85,7 +85,6 @@
               </div>
             </div>
           </div>
-          <!-- <button type="submit" id="submit" class="btn btn-primary">Submit</button> -->
         </form>
       </div>
       <div class="col">

@@ -5,7 +5,8 @@ let ratings;
 let startingLocation;
 let photos;
 let names;
-let transportType = 'BICYCLING';
+let transportType;
+let place;
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
@@ -194,10 +195,20 @@ function searchPlaces() {
     console.log('test');
 
     autocomplete.addListener('place_changed', function () {
-        var place = autocomplete.getPlace();
-        updateTransportType();
-
+        place = autocomplete.getPlace();
         startingLocation = place.geometry.location.toJSON();
+        updateTransportType();
+    });
+
+    button = document.getElementById('submit');
+    button.addEventListener('click', function() {
+        if(place === undefined) {
+            return;
+        }
+        if(startingLocation === undefined) {
+            return;
+        }
+        document.getElementById("locationInput").innerHTML = location.formatted_address;
         let r = 2000;
         let centerCoord = computeOffset(startingLocation, r, Math.random() * Math.PI * 2);
         getPlaces(centerCoord.lat, centerCoord.lng, r);
