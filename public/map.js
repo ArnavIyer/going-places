@@ -1,15 +1,14 @@
 let map;
-let place_ids;
 let autocomplete;
 let locations;
 let ratings;
 let startingLocation;
+let photos;
+let names;
 let transportType = 'BICYCLING';
 
 function main() {
     initMap();
-    // drawLine();
-    // getPlaces(33.080056, -96.752313, 2000);
     searchPlaces();
 }
 
@@ -19,9 +18,10 @@ const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
 function getPlaces(latitude, longitude, radius) {
     initMap(); // to erase previous routes
     const type = ['tourist_attraction', 'primary_school', 'park'];
-    place_ids = [];
     locations = [];
     ratings = [];
+    photos = [];
+    names = [];
     for (let t = 0; t < 3; t++) {
         const request = {
             location: { lat: latitude, lng: longitude },
@@ -32,27 +32,30 @@ function getPlaces(latitude, longitude, radius) {
         service.nearbySearch(request, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
-                    place_ids.push(results[i].place_id);
                     locations.push(results[i].geometry.location.toJSON());
                     ratings.push(results[i].rating);
-                    // createMarker(results[i].geometry.location, results[i].name);
+                    if (typeof(results[i].photos) == "undefined") {
+                        photos.push("");
+                    } else {
+                        photos.push(results[i].photos[0].getUrl());
+                    }
+                    names.push(results[i].name);
                 }
                 map.setCenter(request.location);
             }
         });
     }
-    console.log(locations);
-    setTimeout(() => { choosePoints(place_ids, locations); }, 2000); // how do i make this without a wait? this can only execute after we get all the place ids and locations
+    setTimeout(() => { choosePoints(locations); }, 2000); // how do i make this without a wait? this can only execute after we get all the place ids and locations
 }
 
 // chooses points and passes them to drawDirections
-function choosePoints(place_ids, locations) {
-
+function choosePoints(locations) {
+    console.log(names);
     var hullData = convexHull(locations);
 
     let closestPlace = 0;
     let minDist = Number.POSITIVE_INFINITY;
-    let minRating = 0;
+    let maxRating = 0;
     let ratingIndex = 0;
     let prevRatingIndex = 0;
     hullData.hull.forEach(function (place, index) {
@@ -62,14 +65,20 @@ function choosePoints(place_ids, locations) {
             minDist = dist;
             closestPlace = index;
         }
-        if (minRating > hullData.hull_ratings[index]) {
-            prevRatingIndex = ratingIndex;
-            ratingIndex = index;
-            minRating = hullData.hull_ratings[index];
+        if (maxRating < hullData.hull_ratings[index]) {
+            if (hullData.hull_photos[index] != "") {
+                prevRatingIndex = ratingIndex;
+                ratingIndex = index;
+                maxRating = hullData.hull_ratings[index];
+            }
         }
     });
+     
+    while (hullData.hull_photos[prevRatingIndex] == "") {
+        prevRatingIndex++;
+    }
 
-
+    getHighlights(hullData.hull_photos[ratingIndex], hullData.hull_photos[prevRatingIndex], hullData.hull_names[ratingIndex], hullData.hull_names[prevRatingIndex]);
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
     hullData.hull = hullData.hull.slice(0, Math.min(25, hullData.hull.length));
@@ -90,7 +99,7 @@ function drawDirections(origin, destination, waypoints, mode) {
         destination: destination,   //google.maps.Place interface
         origin: origin,             //google.maps.Place interface
         travelMode: mode,
-        // optimizeWaypoints: true,
+        avoidHighways: true,
         waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
     renderer = new google.maps.DirectionsRenderer({
@@ -168,17 +177,19 @@ function searchPlaces() {
         let r = 2000;
         let centerCoord = computeOffset(startingLocation, r, Math.random() * Math.PI * 2);
         getPlaces(centerCoord.lat, centerCoord.lng, r);
-
-        // var high1 = document.getElementById("highlightOne");
-        // high1.src = "https://www.pisd.edu/cms/lib/TX02215173/Centricity/Domain/1115/Mathews%20facade.jpg";
-        // var high2 = document.getElementById("highlightTwo");
-        // high2.src = "https://www.pisd.edu/cms/lib/TX02215173/Centricity/Domain/1115/Mathews%20facade.jpg";
     });
 }
 
-function getHighlights() {
-    var high1 = document.getElementById("highlightOne");
-    var high2 = document.getElementById("highlightTwo");
+function getHighlights(url1, url2, name1, name2) {
+    document.getElementById("highlightOne").src = url1;
+    document.getElementById("highlightTwo").src = url2;
+    document.getElementById("highlightOneText").innerHTML = name1;
+    document.getElementById("highlightTwoText").innerHTML = name2;
+
+    console.log(url1);
+    console.log(name1);
+    console.log(url2);
+    console.log(name2);
 }
 
 function updateTransportType() {
@@ -186,15 +197,14 @@ function updateTransportType() {
     console.log(transportType);
 }
 
-
-
 function convexHull(points) {
     if (points.length < 3) {
         return points;
     }
     hull = [];
-    hull_ids = [];
     hull_ratings = [];
+    hull_photos = [];
+    hull_names = [];
 
     var leftmost = 0;
     for (let i = 0; i < points.length; i++) {
@@ -207,8 +217,9 @@ function convexHull(points) {
     let q;
     do {
         hull.push(points[p]);
-        hull_ids.push(place_ids[p]);
         hull_ratings.push(ratings[p]);
+        hull_photos.push(photos[p]);
+        hull_names.push(names[p]);
 
         q = (p + 1) % points.length;
         for (let i = 0; i < points.length; i++) {
@@ -220,7 +231,7 @@ function convexHull(points) {
 
     } while (p != leftmost);
 
-    return { hull: hull, hull_ids: hull_ids, hull_ratings: hull_ratings };
+    return { hull: hull, hull_ratings: hull_ratings, hull_photos: hull_photos, hull_names: hull_names};
 }
 
 function orientationNum(p, q, r) {
