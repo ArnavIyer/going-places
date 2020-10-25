@@ -8,6 +8,8 @@ let radius;
 let transportType;
 let place;
 
+const ws = new WebSocket("ws://localhost:9099");
+
 function main() {
     document.getElementById('route-metrics').hidden = true;
     initMap();
@@ -64,7 +66,20 @@ function choosePoints(locations) {
         }
     });
 
-    fillCarousel(hullData.hull_names, hullData.hull_photos);
+    finalPhotos = [];
+    finalNames = [];
+
+    hullData.hull_photos.forEach(function(url, i) {
+        ws.send(url);
+        ws.addEventListener("message", e => {
+            if (e.data) {
+                finalPhotos.push(url);
+                finalNames.push(hullData.hull_names[i]);
+            }
+        });
+    });
+
+    // fillCarousel(finalNames, finalPhotos);
 
     hullData.hull = hullData.hull.slice(closestPlace, hullData.hull.length).concat(hullData.hull.slice(0, closestPlace));
     hullData.hull = hullData.hull.slice(0, Math.min(25, hullData.hull.length));
@@ -273,3 +288,9 @@ function getElevation(path) {
         document.getElementById("elevation").innerHTML = (sum / (res.length - 1)).toFixed(2);
     });
 }
+
+// google cloud stuff
+
+// function quickstart() {
+//     const client = new vision.ImageAnnotatorClient();
+// }
