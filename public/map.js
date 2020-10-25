@@ -22,7 +22,7 @@ function main() {
     updateModal();
 }
 
-const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
+const KEY = 'AIzaSyCqFNIkXGnIREGxDKlgrhYjpNHpWS9y6PQ';
 
 // gets places of interest to draw, passes these places to choosePoints
 function getPlaces(latitude, longitude, radius) {

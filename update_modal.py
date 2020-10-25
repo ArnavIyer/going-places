@@ -16,7 +16,7 @@ modal = soup.find(id='modal-body')
 inner = '<table id="classTable" class="table table-bordered">\n<thead>\n</thead>\n<tbody>\n'
 
 with conn.cursor() as cur:
-    cur.execute("SELECT hull_data->'hull_names',sentiment FROM route_data;")
+    cur.execute("SELECT direction_service->'routes'->0->'legs'->0->'start_address', direction_service->'routes'->0->'legs'->0->'duration'->'text', direction_service->'routes'->0->'legs'->0->'distance'->'text', sentiment FROM route_data;")
     rows = cur.fetchall()
     for row in rows:
         inner += '<tr>\n'
