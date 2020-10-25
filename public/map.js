@@ -4,8 +4,8 @@ let locations;
 let startingLocation;
 let photos;
 let names;
-let radius;
-let transportType;
+let radius = 750;
+let transportType = "WALKING";
 let place;
 
 function main() {
