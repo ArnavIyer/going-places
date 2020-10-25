@@ -12,12 +12,14 @@ let place;
 
 const ws = new WebSocket("ws://localhost:9099");
 const ws2 = new WebSocket("ws://localhost:8088");
+const ws3 = new WebSocket("ws://localhost:7077");
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
     document.getElementById('error').hidden = true;
     initMap();
     searchPlaces();
+    updateModal();
 }
 
 const KEY = 'AIzaSyChmgzgxmgqxLW01TUjgUoZfs_WLDTR3X8';
@@ -57,7 +59,7 @@ function getPlaces(latitude, longitude, radius) {
 
 // chooses points and passes them to drawDirections
 function choosePoints(locations) {
-    var hullData = convexHull(locations);
+    hullData = convexHull(locations);
     
     let closestPlace = 0;
     let minDist = Number.POSITIVE_INFINITY;
@@ -309,6 +311,17 @@ function getElevation(path) {
             sum += res[i].elevation - startElevation;
         }
         document.getElementById("elevation").innerHTML = (sum / (res.length - 1)).toFixed(2);
+    });
+}
+
+function updateModal() {
+    past = document.getElementById('past');
+    past.addEventListener('click', function() {
+        ws3.send("hello");
+        ws3.addEventListener("message", event => {
+            document.getElementById("modal-body").innerHTML = event.data;
+            console.log(event.data);
+        });
     });
 }
 
