@@ -7,6 +7,7 @@ let startingLocation;
 let transportType = 'BICYCLING';
 
 function main() {
+    document.getElementById('route-metrics').hidden = true;
     initMap();
     // drawLine();
     // getPlaces(33.080056, -96.752313, 2000);
@@ -94,10 +95,13 @@ function drawDirections(origin, destination, waypoints, mode) {
         waypoints: waypoints,       // Array<DirectionsWaypoint>
     };
     var totalPathPoints = [];
-    totalPathPoints.push(origin);
-    totalPathPoints.push(waypoints);
-    totalPathPoints.push(destination);
-    console.log(totalPathPoints);
+    totalPathPoints.push(origin.location);
+    waypoints.forEach(item => {
+        totalPathPoints.push(item.location)
+        console.log(item.location);
+    });
+    totalPathPoints.push(destination.location);
+    getElevation(totalPathPoints);
     renderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
         draggable: true,
@@ -107,7 +111,17 @@ function drawDirections(origin, destination, waypoints, mode) {
     service.route(request, (results, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
             renderer.setDirections(results);
+            let leg = results.routes[0].legs[0];
+            document.getElementById("distance").innerHTML = leg.distance.text;
+            document.getElementById("time").innerHTML = leg.duration.text;
         }
+    });
+    document.getElementById('route-metrics').hidden = false;
+    new google.maps.Marker({
+        position: origin.location,
+        map,
+        title: "Starting Position",
+        label: 'S'
     });
 }
 
@@ -233,6 +247,19 @@ function orientationNum(p, q, r) {
     return ((val == 0) ? 0 : ((val > 0) ? 1 : 2));
 }
 
-function getElevation() {
-
+function getElevation(path) {
+    const elevator = new google.maps.ElevationService();
+    console.log(path);
+    elevator.getElevationForLocations(
+    {
+        locations: path,
+    }, (res, status) => {      
+        console.log(res);  
+        let startElevation = res[0].elevation;
+        let sum = 0;
+        for(let i = 1; i < res.length; ++i) {
+            sum += res[i].elevation - startElevation;
+        }
+        document.getElementById("elevation").innerHTML = (sum / (res.length - 1)).toFixed(2);
+    });
 }
