@@ -2,13 +2,16 @@ let map;
 let autocomplete;
 let locations;
 let startingLocation;
+let direction_service;
 let photos;
 let names;
+let hullData;
 let radius = 750;
 let transportType = "WALKING";
 let place;
 
 const ws = new WebSocket("ws://localhost:9099");
+const ws2 = new WebSocket("ws://localhost:8088");
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
@@ -53,7 +56,7 @@ function getPlaces(latitude, longitude, radius) {
 // chooses points and passes them to drawDirections
 function choosePoints(locations) {
     console.log(names);
-    var hullData = convexHull(locations);
+    hullData = convexHull(locations);
 
     let closestPlace = 0;
     let minDist = Number.POSITIVE_INFINITY;
@@ -121,6 +124,7 @@ function drawDirections(origin, destination, waypoints, mode) {
     service.route(request, (results, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
             renderer.setDirections(results);
+            direction_service = results;
             let leg = results.routes[0].legs[0];
             document.getElementById("distance").innerHTML = leg.distance.text;
             document.getElementById("time").innerHTML = leg.duration.text;
@@ -218,6 +222,9 @@ function searchPlaces() {
         document.getElementById("locationInput").innerHTML = location.formatted_address;
         let centerCoord = computeOffset(startingLocation, radius, Math.random() * Math.PI * 2);
         getPlaces(centerCoord.lat, centerCoord.lng, radius);
+
+        if(direction_service !== undefined) ws2.send(JSON.stringify({direction_service: direction_service, hull_data: hullData, sentiment: 0}, null, 2));
+        console.log("test");
     });
 }
 
