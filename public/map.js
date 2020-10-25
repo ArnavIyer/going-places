@@ -5,7 +5,9 @@ let ratings;
 let startingLocation;
 let photos;
 let names;
+let radius;
 let transportType = 'BICYCLING';
+const MILESTOM = 1609.344;
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
@@ -196,11 +198,11 @@ function searchPlaces() {
     autocomplete.addListener('place_changed', function () {
         var place = autocomplete.getPlace();
         updateTransportType();
+        updateRadius();
 
         startingLocation = place.geometry.location.toJSON();
-        let r = 2000;
-        let centerCoord = computeOffset(startingLocation, r, Math.random() * Math.PI * 2);
-        getPlaces(centerCoord.lat, centerCoord.lng, r);
+        let centerCoord = computeOffset(startingLocation, radius, Math.random() * Math.PI * 2);
+        getPlaces(centerCoord.lat, centerCoord.lng, radius);
     });
 }
 
@@ -219,6 +221,12 @@ function getHighlights(url1, url2, name1, name2) {
 function updateTransportType() {
     transportType = document.getElementById("transportTypeSelect").value;
     console.log(transportType);
+}
+
+function updateRadius() {
+    radius = document.getElementById("radiusInput").value;
+    // radius = (radius * MILESTOM) / (2 * Math.PI);
+    console.log(radius);
 }
 
 function convexHull(points) {
