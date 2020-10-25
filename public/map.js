@@ -6,8 +6,8 @@ let startingLocation;
 let photos;
 let names;
 let radius;
-let transportType = 'BICYCLING';
-const MILESTOM = 1609.344;
+let transportType;
+let place;
 
 function main() {
     document.getElementById('route-metrics').hidden = true;
@@ -196,11 +196,21 @@ function searchPlaces() {
     console.log('test');
 
     autocomplete.addListener('place_changed', function () {
-        var place = autocomplete.getPlace();
+        place = autocomplete.getPlace();
+        startingLocation = place.geometry.location.toJSON();
         updateTransportType();
         updateRadius();
+    });
 
-        startingLocation = place.geometry.location.toJSON();
+    button = document.getElementById('submit');
+    button.addEventListener('click', function() {
+        if(place === undefined) {
+            return;
+        }
+        if(startingLocation === undefined) {
+            return;
+        }
+        document.getElementById("locationInput").innerHTML = location.formatted_address;
         let centerCoord = computeOffset(startingLocation, radius, Math.random() * Math.PI * 2);
         getPlaces(centerCoord.lat, centerCoord.lng, radius);
     });
