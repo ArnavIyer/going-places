@@ -7,10 +7,12 @@ wss.on("connection", ws => {
     console.log("Connected");
 
     ws.on("message", msg => {
+        // trigger update_modal.py
         const python = spawn('python', ['update_modal.py',]);
 
         var dataToSend = ''
 
+        // obtain new innerHTML data
         python.stdout.on('data', function (data) {
             console.log('Pipe data from python script ...');
             dataToSend = data.toString();
