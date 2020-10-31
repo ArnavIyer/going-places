@@ -1,0 +1,2 @@
+document.getElementById("google").src = "https://maps.googleapis.com/maps/api/js?key=" + config.GOOGLE_KEY + "&callback=main&libraries=places&v=weekly";
+console.log(document.getElementById("google").src);
