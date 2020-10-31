@@ -19,7 +19,7 @@ function main() {
     document.getElementById('error').hidden = true;
     initMap();
     searchPlaces();
-    updateModal();
+    ();
 }
 
 const KEY = 'AIzaSyCqFNIkXGnIREGxDKlgrhYjpNHpWS9y6PQ';
@@ -71,22 +71,6 @@ function choosePoints(locations) {
             closestPlace = index;
         }
     });
-
-    // finalPhotos = [];
-    // finalNames = [];
-    // console.log(hullData.hull_photos.length);
-    // ws.send(hullData.hull_photos);
-    // ws.addEventListener("message", answers => {
-    //     console.log(answers);
-    //     JSON.parse(answers.data).forEach(function(goodImage, i) {
-    //         if (goodImage) {
-    //             finalPhotos.push(url);
-    //             finalNames.push(hullData.hull_names[i]);
-    //         }
-    //     })
-    // });
-
-    // console.log(finalPhotos);
 
     fillCarousel(hullData.hull_names, hullData.hull_photos);
 
@@ -245,9 +229,10 @@ function searchPlaces() {
             document.getElementById('error').hidden = false;
             return;
         }
-        console.log('test');
+        console.log(null);
         ws2.send(JSON.stringify({direction_service: direction_service, hull_data: hullData, sentiment: satisfaction}, null, 2));
         document.getElementById('error').hidden = true;
+        updateModal();
     });
 }
 
@@ -317,16 +302,10 @@ function getElevation(path) {
 function updateModal() {
     past = document.getElementById('past');
     past.addEventListener('click', function() {
-        ws3.send("hello");
+        ws3.send(null);
         ws3.addEventListener("message", event => {
             document.getElementById("modal-body").innerHTML = event.data;
             console.log(event.data);
         });
     });
 }
-
-// google cloud stuff
-
-// function quickstart() {
-//     const client = new vision.ImageAnnotatorClient();
-// }

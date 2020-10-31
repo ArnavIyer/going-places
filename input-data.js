@@ -10,13 +10,14 @@ wss.on("connection", ws => {
         // console.log(json);
         // console.log('received ' + JSON.parse(json));
 
-        fs.writeFile("json.json", json, 'utf8', function(err) {
-            if (err) {
-                console.log(err);
-            }
-            console.log(json.hull_data);
-            console.log("written");
-        });
+        // No longer reading form JSON
+        // fs.writeFile("json.json", json, 'utf8', function(err) {
+        //     if (err) {
+        //         console.log(err);
+        //     }
+        //     console.log(json.hull_data);
+        //     console.log("written");
+        // });
 
         const python = spawn('python', ['populate_route_data.py',]);
     });
