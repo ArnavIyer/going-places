@@ -11,4 +11,4 @@ Going Places is an intelligent route planning application for everyday people lo
 For a full demo video and more information on Going Places, visit this [Devpost submission page](https://devpost.com/software/going-places).
 
 ## Acknowledgements
-Built at [HackTX 2020]() by [Arnav Iyer](https://github.com/ArnavIyer) and [Shakeel Samsudeen](https://github.com/shakeelsamsu/).
+Built at [HackTX 2020](https://hacktx2020.devpost.com/) by [Arnav Iyer](https://github.com/ArnavIyer) and [Shakeel Samsudeen](https://github.com/shakeelsamsu/).
